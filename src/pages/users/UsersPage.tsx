@@ -52,7 +52,7 @@ export function UsersPage() {
 
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      await api.delete('/users', { data: { id: userId } });
+      await api.delete(`/users/${userId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });

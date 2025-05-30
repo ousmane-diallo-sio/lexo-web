@@ -51,7 +51,7 @@ export const api = {
     const response = await apiClient.patch<ServerResponse<T>>(url, data);
     return response.data;
   },
-  delete: async <T>(url: string, config?: { data?: any }) => {
+  delete: async <T>(url: string, config?: { data?: { id: string } }) => {
     const response = await apiClient.delete<ServerResponse<T>>(url, config);
     return response.data;
   },
