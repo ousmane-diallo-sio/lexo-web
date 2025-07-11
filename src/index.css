@@ -190,3 +190,49 @@ button:focus-visible {
     @apply bg-background text-foreground;
   }
 }
+
+@import 'react-day-picker/dist/style.css';
+
+/* Custom styles for date picker */
+.date-picker-button {
+  height: 40px;
+  font-size: 0.9rem;
+}
+
+/* Calendar styling overrides */
+.rdp {
+  --rdp-cell-size: 36px; /* Size of calendar day cells */
+  --rdp-accent-color: hsl(var(--primary)); /* Accent color for selected date */
+  --rdp-background-color: hsl(var(--primary) / 0.1); /* Background for hovered elements */
+  margin: 0;
+}
+
+.rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+  background-color: hsl(var(--primary) / 0.1);
+}
+
+.rdp-day_selected:not([disabled]) {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.rdp-day_selected:focus:not([disabled]) {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+/* Form styling enhancements */
+input[type="checkbox"] {
+  accent-color: hsl(var(--primary));
+  width: 16px;
+  height: 16px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    display: none;
+    -webkit-appearance: none;
+}
+
+.form-label {
+  font-weight: 500;
+}

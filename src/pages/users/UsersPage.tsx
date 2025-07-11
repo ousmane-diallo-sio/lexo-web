@@ -1,18 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { User } from '../../types';
+import type { User, CreateUserDTO, CreateAdminUserDTO } from '../../types';
 import { api } from '../../lib/api/client';
+import { toast } from 'sonner';
+import { FocusTrap } from '@/components/ui/focus-trap';
 import {
   Table,
   TableBody,
   TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -34,6 +34,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { UserForm } from '@/components/forms/UserForm';
 
 export function UsersPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -56,35 +57,110 @@ export function UsersPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('User deleted successfully', {
+        action: {
+          label: 'Dismiss',
+          onClick: () => {},
+        },
+        closeButton: true,
+      });
     },
+    onError: (error) => {
+      toast.error('Failed to delete user', {
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        action: {
+          label: 'Retry',
+          onClick: () => deleteUserMutation.reset(),
+        },
+        closeButton: true,
+      });
+    }
   });
 
   const createUserMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const endpoint = data.isAdmin ? '/users/admin' : '/users';
+    mutationFn: async (data: CreateUserDTO | CreateAdminUserDTO) => {
+      const endpoint = 'isAdmin' in data && data.isAdmin ? '/users/admin' : '/users';
       await api.post(endpoint, data);
     },
-    onSuccess: () => {
+    onSuccess: (_, data) => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       setIsCreateModalOpen(false);
+      toast.success('User created successfully', {
+        description: `User ${data.username} has been created.`,
+        action: {
+          label: 'Dismiss',
+          onClick: () => {},
+        },
+        closeButton: true,
+      });
     },
+    onError: (error) => {
+      toast.error('Failed to create user', {
+        description: error instanceof Error ? error.message : 'Unknown error occurred'
+      });
+    }
   });
 
   const updateUserMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Partial<CreateUserDTO | CreateAdminUserDTO> }) => {
       await api.patch(`/users/${id}`, data);
     },
-    onSuccess: () => {
+    onSuccess: (_, { data }) => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       setEditingUser(null);
+      toast.success('User updated successfully', {
+        description: `User ${data.username || ''} has been updated.`,
+        action: {
+          label: 'Dismiss',
+          onClick: () => {},
+        },
+        closeButton: true,
+      });
     },
+    onError: (error) => {
+      toast.error('Failed to update user', {
+        description: error instanceof Error ? error.message : 'Unknown error occurred'
+      });
+    }
   });
 
-  const handleSubmit = async (data: any) => {
-    if (editingUser) {
-      await updateUserMutation.mutateAsync({ id: editingUser.id, data });
-    } else {
-      await createUserMutation.mutateAsync(data);
+  // Handle form submission from UserForm
+  const handleSubmit = async (formData: {
+    email: string;
+    username: string;
+    password?: string;
+    birthdate?: string;
+    isAdmin?: boolean;
+    adminCreationKey?: string;
+    googleId?: string;
+    emailVerified?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+  }) => {
+    try {
+      // Prepare data for API
+      const apiData: CreateUserDTO | CreateAdminUserDTO = {
+        email: formData.email,
+        username: formData.username,
+        password: formData.password,
+        birthdate: formData.birthdate ? new Date(formData.birthdate) : undefined,
+        googleId: formData.googleId,
+        emailVerified: formData.emailVerified,
+        ...formData.isAdmin && { isAdmin: true, adminCreationKey: formData.adminCreationKey },
+      };
+      
+      if (editingUser) {
+        await updateUserMutation.mutateAsync({ id: editingUser.id, data: apiData });
+        setEditingUser(null);
+      } else {
+        await createUserMutation.mutateAsync(apiData);
+        setIsCreateModalOpen(false);
+      }
+      
+      return Promise.resolve(); // Return resolved promise for the form
+    } catch (error) {
+      console.error('Error submitting user form:', error);
+      return Promise.reject(error); // Return rejected promise for the form
     }
   };
 
@@ -146,7 +222,6 @@ export function UsersPage() {
                     </span>
                   )}
                 </TableCell>
-                <TableCell>{new Date(user.updatedAt).toLocaleString()}</TableCell>
                 <TableCell className="text-right flex gap-2 justify-end">
                   <Button
                     variant="ghost"
@@ -213,12 +288,13 @@ export function UsersPage() {
       ) : (
         <div className="text-center text-muted-foreground">No users found</div>
       )}
+      {/* User View Drawer */}
       <Drawer
-        open={!!viewingUser}
-        onOpenChange={() => setViewingUser(null)}
+        open={viewingUser !== null}
+        onOpenChange={(open) => !open && setViewingUser(null)}
         direction='right'
       >
-        <div className={!!viewingUser ? 'fixed inset-0 bg-black/40 z-40 transition-opacity' : 'hidden'} />
+        <div className={viewingUser ? 'fixed inset-0 bg-black/40 z-40 transition-opacity' : 'hidden'} />
         <DrawerContent className="h-full w-full z-50 bg-white dark:bg-zinc-900 border-l border-gray-200 dark:border-zinc-800 shadow-2xl animate-in slide-in-from-right-80">
           <DrawerHeader>
             <DrawerTitle>User Details</DrawerTitle>
@@ -285,10 +361,73 @@ export function UsersPage() {
             </div>
           )}
           <DrawerClose asChild>
-            <Button variant="outline" className="absolute top-4 right-4">Close</Button>
+            <Button variant="outline" className="absolute top-4 right-4" aria-label="Close user details">
+              <span>Close</span>
+            </Button>
+          </DrawerClose>
+        </DrawerContent>
+      </Drawer>
+
+      {/* Create User Drawer */}
+      <Drawer
+        open={isCreateModalOpen}
+        onOpenChange={() => setIsCreateModalOpen(false)}
+        direction='right'
+      >
+        <div className={isCreateModalOpen ? 'fixed inset-0 bg-black/40 z-40 transition-opacity' : 'hidden'} />
+        <DrawerContent className="h-full w-full z-50 bg-white dark:bg-zinc-900 border-l border-gray-200 dark:border-zinc-800 shadow-2xl animate-in slide-in-from-right-80">
+          <DrawerHeader>
+            <DrawerTitle>Create New User</DrawerTitle>
+            <DrawerDescription>
+              Fill in the details to create a new user
+            </DrawerDescription>
+          </DrawerHeader>
+          <div className="p-6">
+            <FocusTrap active={isCreateModalOpen}>
+              <UserForm
+                onSubmit={handleSubmit}
+                onCancel={() => setIsCreateModalOpen(false)}
+              />
+            </FocusTrap>
+          </div>
+          <DrawerClose asChild>
+            <Button variant="outline" className="absolute top-4 right-4" aria-label="Close user creation form">
+              <span>Close</span>
+            </Button>
+          </DrawerClose>
+        </DrawerContent>
+      </Drawer>
+
+      {/* Edit User Drawer */}
+      <Drawer
+        open={editingUser !== null}
+        onOpenChange={(open) => !open && setEditingUser(null)}
+        direction='right'
+      >
+        <div className={editingUser ? 'fixed inset-0 bg-black/40 z-40 transition-opacity' : 'hidden'} />
+        <DrawerContent className="h-full w-full z-50 bg-white dark:bg-zinc-900 border-l border-gray-200 dark:border-zinc-800 shadow-2xl animate-in slide-in-from-right-80">
+          <DrawerHeader>
+            <DrawerTitle>Edit User</DrawerTitle>
+            <DrawerDescription>Update user information</DrawerDescription>
+          </DrawerHeader>
+          <div className="p-6">
+            {editingUser && (
+              <FocusTrap active={editingUser !== null}>
+                <UserForm
+                  user={editingUser}
+                  onSubmit={handleSubmit}
+                  onCancel={() => setEditingUser(null)}
+                />
+              </FocusTrap>
+            )}
+          </div>
+          <DrawerClose asChild>
+            <Button variant="outline" className="absolute top-4 right-4" aria-label="Close user editing form">
+              <span>Close</span>
+            </Button>
           </DrawerClose>
         </DrawerContent>
       </Drawer>
     </div>
   );
-} 
+}

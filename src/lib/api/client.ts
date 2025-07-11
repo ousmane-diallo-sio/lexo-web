@@ -43,11 +43,11 @@ export const api = {
     const response = await apiClient.get<ServerResponse<T>>(url);
     return response.data;
   },
-  post: async <T>(url: string, data?: any) => {
+  post: async <T>(url: string, data?: unknown) => {
     const response = await apiClient.post<ServerResponse<T>>(url, data);
     return response.data;
   },
-  patch: async <T>(url: string, data?: any) => {
+  patch: async <T>(url: string, data?: unknown) => {
     const response = await apiClient.patch<ServerResponse<T>>(url, data);
     return response.data;
   },

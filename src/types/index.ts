@@ -15,6 +15,8 @@ export interface CreateUserDTO {
   username: string;
   password?: string;
   birthdate?: Date;
+  googleId?: string;
+  emailVerified?: boolean;
 }
 
 export interface CreateUserGoogleDTO {
