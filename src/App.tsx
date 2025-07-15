@@ -5,6 +5,7 @@ import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { MainLayout } from './components/layout/MainLayout';
 import { LoginPage } from './pages/auth/LoginPage';
 import { UsersPage } from './pages/users/UsersPage';
+import { PrivacyPage } from './pages/privacy/PrivacyPage';
 import { Toaster } from './components/ui/sonner';
 
 const queryClient = new QueryClient({
@@ -24,6 +25,7 @@ function App() {
           <Toaster />
           <Routes>
             <Route path="/auth/login" element={<LoginPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
             <Route
               path="/"
               element={

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { z } from 'zod';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -94,8 +94,18 @@ export function LoginPage() {
               {loading ? "Signing in..." : "Sign in"}
             </Button>
           </form>
+          
+          <div className="mt-6 text-center text-sm text-muted-foreground">
+            By signing in, you agree to our{' '}
+            <Link 
+              to="/privacy" 
+              className="text-primary hover:underline"
+            >
+              Privacy Policy
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>
   );
-} 
+}
