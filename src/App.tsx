@@ -6,7 +6,17 @@ import { MainLayout } from './components/layout/MainLayout';
 import { LoginPage } from './pages/auth/LoginPage';
 import { UsersPage } from './pages/users/UsersPage';
 import { PrivacyPage } from './pages/privacy/PrivacyPage';
+import DashboardPage from './pages/dashboard/DashboardPage';
+import { EntityPage } from './pages/EntityPage';
 import { Toaster } from './components/ui/sonner';
+
+// Entity configs
+import { userEntityConfig } from './config/entities/users';
+import { childUserEntityConfig } from './config/entities/childUsers';
+import { letterExerciseEntityConfig } from './config/entities/letterExercises';
+import { animalExerciseEntityConfig } from './config/entities/animalExercises';
+import { numberExerciseEntityConfig } from './config/entities/numberExercises';
+import { colorExerciseEntityConfig } from './config/entities/colorExercises';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,7 +51,7 @@ function App() {
               element={
                 <ProtectedRoute>
                   <MainLayout>
-                    <div>Dashboard (Coming Soon)</div>
+                    <DashboardPage />
                   </MainLayout>
                 </ProtectedRoute>
               }
@@ -52,6 +62,66 @@ function App() {
                 <ProtectedRoute>
                   <MainLayout>
                     <UsersPage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/entities/users"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <EntityPage config={userEntityConfig} />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/entities/child-users"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <EntityPage config={childUserEntityConfig} />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/entities/letter-exercises"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <EntityPage config={letterExerciseEntityConfig} />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/entities/animal-exercises"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <EntityPage config={animalExerciseEntityConfig} />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/entities/number-exercises"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <EntityPage config={numberExerciseEntityConfig} />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/entities/color-exercises"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <EntityPage config={colorExerciseEntityConfig} />
                   </MainLayout>
                 </ProtectedRoute>
               }

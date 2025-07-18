@@ -20,7 +20,6 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-8">
               <Link to="/dashboard" className="text-xl font-bold text-blue-600 dark:text-blue-400">Lexo Admin</Link>
               <Link to="/dashboard" className="text-blue-600/80 hover:text-blue-700 dark:text-blue-400/80 dark:hover:text-blue-300 font-medium">Dashboard</Link>
-              <Link to="/users" className="text-blue-600/80 hover:text-blue-700 dark:text-blue-400/80 dark:hover:text-blue-300 font-medium">Users</Link>
             </div>
             <div className="flex items-center gap-4">
               <div className="relative">
